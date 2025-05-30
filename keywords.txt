@@ -1,0 +1,12 @@
+ESPNowTimeSync	KEYWORD1
+ESPNowTimeSyncLED	KEYWORD1
+begin	KEYWORD2
+startSync	KEYWORD2
+stopSync	KEYWORD2
+getSyncedTime	KEYWORD2
+getOffset	KEYWORD2
+isSynchronized	KEYWORD2
+getStats	KEYWORD2
+onSyncStatus	KEYWORD2
+onSyncEvent	KEYWORD2
+update	KEYWORD2 

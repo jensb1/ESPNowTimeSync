@@ -1,0 +1,50 @@
+# Build output
+*.hex
+*.elf
+*.bin
+*.map
+
+# Arduino IDE
+.vscode/
+.idea/
+*.o
+*.d
+*.a
+*.lss
+*.sym
+*.eep
+*.lss
+*.map
+*.elf
+*.hex
+*.bin
+*.srec
+*.lst
+*.tmp
+*.bak
+*.swp
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Project specific
+build/
+dist/
+out/ 
