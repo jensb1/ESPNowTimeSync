@@ -135,6 +135,8 @@ config.sync_interval_ms = 1000;        // Sync frequency
 config.response_timeout_ms = 50;       // Response timeout
 config.enable_logging = true;          // Debug output
 config.log_interval_syncs = 10;        // Log every N syncs
+config.resync_interval_ms = 200;       // Faster retry when unsynced
+config.max_missed_responses = 3;       // Mark unsynced after N timeouts
 
 timeSync.begin(false, MASTER_MAC, config);
 ```
@@ -164,6 +166,10 @@ timeSync.begin(false, MASTER_MAC, config);
    - Increase `response_timeout_ms`
    - Check device placement and interference
    - Verify power supply stability
+   - If the master was offline and comes back, the client now retries faster when unsynced (`resync_interval_ms`) and marks itself unsynchronized after `max_missed_responses` consecutive misses, enabling quick re-lock.
+
+4. **Channel mismatch**
+   - Set `config.channel` to a fixed channel used by all devices. The library sets the radio channel when `channel > 0`, improving reliability after restarts.
 
 ### Debug Output
 

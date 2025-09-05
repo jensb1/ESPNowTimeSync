@@ -21,6 +21,10 @@ struct TimeSyncConfig {
   uint32_t response_timeout_ms = 50;
   bool enable_logging = false;
   uint32_t log_interval_syncs = 10;
+  // When not synchronized, retry faster to reacquire quickly
+  uint32_t resync_interval_ms = 200;
+  // After this many consecutive missed responses, consider unsynchronized
+  uint32_t max_missed_responses = 3;
 };
 
 // Statistics structure
@@ -91,6 +95,7 @@ private:
   int64_t current_offset_;
   float smoothed_offset_;
   uint32_t last_sync_time_;
+  uint32_t consecutive_failures_;
   
   // Response handling (client only)
   volatile bool response_ready_;

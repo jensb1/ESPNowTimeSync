@@ -1,4 +1,5 @@
 #include "ESPNowTimeSync.h"
+#include <esp_wifi.h>
 
 // Static instance pointer for callback
 ESPNowTimeSync* ESPNowTimeSync::instance_ = nullptr;
@@ -11,6 +12,7 @@ ESPNowTimeSync::ESPNowTimeSync()
   , current_offset_(0)
   , smoothed_offset_(0.0f)
   , last_sync_time_(0)
+  , consecutive_failures_(0)
   , response_ready_(false)
   , t4_(0)
   , sync_status_callback_(nullptr)
@@ -73,6 +75,11 @@ bool ESPNowTimeSync::begin(bool is_master, const uint8_t* master_mac, const Time
     return false;
   }
   
+  // If a specific channel is configured, set the WiFi radio to that channel
+  if (config_.channel > 0) {
+    esp_wifi_set_channel(config_.channel, WIFI_SECOND_CHAN_NONE);
+  }
+  
   // Set static instance for callbacks
   instance_ = this;
   
@@ -128,6 +135,7 @@ void ESPNowTimeSync::startSync() {
   
   sync_active_ = true;
   last_sync_time_ = millis();
+  consecutive_failures_ = 0;
   
   if (is_master_) {
     // Master is always synchronized to its own clock
@@ -153,7 +161,8 @@ void ESPNowTimeSync::update() {
   if (!initialized_ || !sync_active_) return;
   
   // Only clients need to actively sync
-  if (!is_master_ && (millis() - last_sync_time_) >= config_.sync_interval_ms) {
+  uint32_t interval = is_synchronized_ ? config_.sync_interval_ms : config_.resync_interval_ms;
+  if (!is_master_ && (millis() - last_sync_time_) >= interval) {
     performSync();
     last_sync_time_ = millis();
   }
@@ -221,6 +230,7 @@ void ESPNowTimeSync::performSync() {
   
   if (response_ready_) {
     stats_.sync_count++;
+    consecutive_failures_ = 0;
     
     // Calculate timing metrics
     int64_t roundTrip = t4_ - response_.t1;
@@ -263,11 +273,25 @@ void ESPNowTimeSync::performSync() {
     
   } else {
     stats_.fail_count++;
+    consecutive_failures_++;
     stats_.success_rate = 100.0f * stats_.sync_count / (stats_.sync_count + stats_.fail_count);
     
     if (config_.enable_logging) {
       Serial.printf("[TimeSync] Timeout #%lu (success rate: %.1f%%)\n", 
                    stats_.fail_count, stats_.success_rate);
+    }
+    
+    // Too many consecutive timeouts: consider unsynchronized and speed up retries
+    if (consecutive_failures_ >= config_.max_missed_responses) {
+      if (is_synchronized_) {
+        //if (config_.enable_logging) {
+        Serial.println("[TimeSync] Lost synchronization due to repeated timeouts");
+        //}
+        // Reset smoothing and sync counter to re-lock faster
+        smoothed_offset_ = 0.0f;
+        stats_.sync_count = 0;
+        updateSyncStatus(false);
+      }
     }
   }
 }
