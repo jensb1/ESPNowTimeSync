@@ -19,7 +19,7 @@ struct TimeSyncConfig {
   float smoothing_alpha = 0.05f;
   uint32_t sync_interval_ms = 1000;
   uint32_t response_timeout_ms = 50;
-  bool enable_logging = true;
+  bool enable_logging = false;
   uint32_t log_interval_syncs = 10;
 };
 
