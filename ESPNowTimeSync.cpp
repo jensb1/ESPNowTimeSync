@@ -215,6 +215,10 @@ void ESPNowTimeSync::processTimeResponse(const esp_now_recv_info_t* info, const 
 void ESPNowTimeSync::performSync() {
   if (is_master_) return;
   
+  if (config_.enable_logging) {
+    Serial.println("[TimeSync] Performing sync");
+  }
+  
   // Send time request
   response_ready_ = false;
   uint64_t t1 = esp_timer_get_time();
@@ -229,6 +233,9 @@ void ESPNowTimeSync::performSync() {
   }
   
   if (response_ready_) {
+    if (config_.enable_logging) {
+      Serial.println("[TimeSync] Response received");
+    }
     stats_.sync_count++;
     consecutive_failures_ = 0;
     
